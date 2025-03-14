@@ -1,50 +1,46 @@
-import assert from 'assert'
-
+import { Contract } from 'ethers'
 import { type DeployFunction } from 'hardhat-deploy/types'
 
-const contractName = 'OORTOFTAdapterTest'
+import { getDeploymentAddressAndAbi } from '@layerzerolabs/lz-evm-sdk-v2'
+import { getNamedAccounts } from 'hardhat'
+
+const contractName = 'OORTOFTUpgradeableTest'
+const chain = {
+    tokenAddress: '0x4872d996f8a94A044AE8e1fa1d928a431602D3b5',
+    endpointAddress: '0x6EDCE65403992e310A62460808c4b910D972f10f',
+}
 
 const deploy: DeployFunction = async (hre) => {
-    const { getNamedAccounts, deployments } = hre
+    const { deploy } = hre.deployments
+    const {deployer, proxyOwner} = await getNamedAccounts();
+    console.log(`deploying ${contractName} on network: ${hre.network.name} with ${deployer}`)
 
-    const { deploy } = deployments
-    const { deployer } = await getNamedAccounts()
+    const { address, abi } = getDeploymentAddressAndAbi(hre.network.name, 'EndpointV2')
+    //const endpointV2Deployment = new Contract(address, abi, signer)
+    try {
+        const proxy = await hre.ethers.getContract('OORTOFTUpgradeableTest')
+        console.log(`Proxy: ${proxy.address}`)
+    } catch (e) {
+        console.log(`Proxy not found`)
+    }
 
-    assert(deployer, 'Missing named deployer account')
-
-    console.log(`Network: ${hre.network.name}`)
-    console.log(`Deployer: ${deployer}`)
-
-    // This is an external deployment pulled in from @layerzerolabs/lz-evm-sdk-v2
-    //
-    // @layerzerolabs/toolbox-hardhat takes care of plugging in the external deployments
-    // from @layerzerolabs packages based on the configuration in your hardhat config
-    //
-    // For this to work correctly, your network config must define an eid property
-    // set to `EndpointId` as defined in @layerzerolabs/lz-definitions
-    //
-    // For example:
-    //
-    // networks: {
-    //   fuji: {
-    //     ...
-    //     eid: EndpointId.AVALANCHE_V2_TESTNET
-    //   }
-    // }
-    const endpointV2Deployment = await hre.deployments.get('EndpointV2')
-
-    const { address } = await deploy(contractName, {
+    await deploy(contractName, {
         from: deployer,
-        args: [
-            '0x6523D3a43C106665Db0f9D03D8687aA95a42843E', // Token address already deployed on specific chain (must set before deployment)
-            endpointV2Deployment.address, // LayerZero's EndpointV2 address
-            deployer, // owner
-        ],
+        args: [chain.tokenAddress, chain.endpointAddress], // replace '0x' with the address of the ERC-20 token
         log: true,
+        waitConfirmations: 1,
         skipIfAlreadyDeployed: false,
+        proxy: {
+            owner: deployer,
+            proxyContract: 'UUPS',
+            execute: {
+                init: {
+                    methodName: 'initialize',
+                    args: [deployer],
+                },
+            },
+        },
     })
-
-    console.log(`Deployed contract: ${contractName}, network: ${hre.network.name}, address: ${address}`)
 }
 
 deploy.tags = [contractName]

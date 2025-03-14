@@ -24,7 +24,7 @@ task('lz:oft:send', 'Send tokens cross-chain using LayerZero technology')
         const provider = await providerFactory(eidA)
         const wallet = new ethers.Wallet(taskArgs.privateKey, provider)
 
-        const oftContractFactory = await hre.ethers.getContractFactory('OORTOFTAdapterTest', wallet)
+        const oftContractFactory = await hre.ethers.getContractFactory('OORTOFTUpgradeableTest', wallet)
         const oft = oftContractFactory.attach(contractA)
 
         //const decimals = await oft.sharedDecimals()
@@ -36,9 +36,10 @@ task('lz:oft:send', 'Send tokens cross-chain using LayerZero technology')
         
         // change token here for origin chain
         //const ERC20Factory = await hre.ethers.getContractAt('IERC20','0xDebaE0580D915997e45c539091DdCE848BCdb4BC');
-        const erc20Token = await hre.ethers.getContractAt('IERC20','0x4872d996f8a94A044AE8e1fa1d928a431602D3b5', wallet);//await hre.ethers.getContractAt('IERC20', (await oft.functions.token())[0])
+        const erc20Token = await hre.ethers.getContractAt('IERC20','0xDebaE0580D915997e45c539091DdCE848BCdb4BC', wallet);//await hre.ethers.getContractAt('IERC20', (await oft.functions.token())[0])
         //console.log(erc20Token)
         const approvalTxResponse = await erc20Token.approve(oft.address, amount, {'gasPrice': '25000000000'});
+        console.log('Approving transaction for ERC20 tokens');
         const approvalTxReceipt = await approvalTxResponse.wait()
         console.log(`approved: ${amount}: ${approvalTxReceipt.transactionHash}`)
         //console.log('balance: ', (await erc20Token.balanceOf(wallet.address)).toString())
@@ -89,7 +90,7 @@ task('lz:oft:send', 'Send tokens cross-chain using LayerZero technology')
                 value: overkillNativeFee,
                 gasPrice: gasPrice.mul(2),
                 nonce,
-                gasLimit: hre.ethers.utils.hexlify(7000000),
+                gasLimit: hre.ethers.utils.hexlify(5000000),
             })
             console.log('Transaction hash:', tx.hash)
             await tx.wait()
