@@ -57,17 +57,17 @@ const config: HardhatUserConfig = {
     networks: {
         'ethereum-mainnet': {
             eid: EndpointId.ETHEREUM_V2_MAINNET,
-            url: process.env.RPC_URL_MAINNET || 'https://eth-mainnet.g.alchemy.com/v2/rC9-qW2UxnMrhL4iy3Ow0t9ECSIOFCEo',
-            accounts,
+            url: process.env.RPC_URL_MAINNET || '',
+            accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [""],
         },
         'bsc-mainnet': {
             eid: EndpointId.BSC_V2_MAINNET,
-            url: process.env.RPC_URL_BSC || 'https://bnb-mainnet.g.alchemy.com/v2/rC9-qW2UxnMrhL4iy3Ow0t9ECSIOFCEo',
-            accounts,
+            url: process.env.RPC_URL_BSC || '',
+            accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [""],
         },
         'sepolia-testnet': {
             eid: EndpointId.SEPOLIA_V2_TESTNET,
-            url: process.env.RPC_URL_SEPOLIA || 'https://eth-sepolia.g.alchemy.com/v2/Au7ISia7nAceQuaL_0eKmKJAa4zygW-j',
+            url: process.env.RPC_URL_SEPOLIA || '',
             accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [""],
         },
         'bsc-testnet': {
